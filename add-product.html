@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>เพิ่ม / แก้ไขสินค้า</title>
+  <link href="https://fonts.googleapis.com/css2?family=Mali&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    body {
+      font-family: 'mali';
+      background: #fff8f0;
+      color: #4b2e05;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #6f4e37;
+      color: white;
+      padding: 15px 20px;
+      font-size: 1.4rem;
+    }
+    nav a {
+      color: #d9cbb6;
+      margin-right: 20px;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    nav a:hover {
+      text-decoration: underline;
+    }
+    main {
+      max-width: 720px;
+      margin: 20px auto;
+      padding: 0 15px;
+    }
+    h1 {
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+    form {
+      background: #f3e8df;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 3px 8px rgb(111 78 55 / 0.2);
+      margin-bottom: 30px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+    input[type="text"], input[type="number"], input[type="date"], select, input[type="file"] {
+      width: 100%;
+      padding: 8px 10px;
+      font-size: 1rem;
+      border: 1.5px solid #6f4e37;
+      border-radius: 6px;
+      box-sizing: border-box;
+      margin-bottom: 15px;
+      background: white;
+      color: #4b2e05;
+    }
+    input[type="file"] {
+      padding: 3px 10px;
+    }
+    button {
+      background: #6f4e37;
+      color: white;
+      font-weight: 700;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-right: 10px;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #8c6a4a;
+    }
+    .btn-cancel {
+      background: #d63447;
+    }
+    .btn-cancel:hover {
+      background: #a52838;
+    }
+    img.img-preview {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 6px;
+      margin-top: -10px;
+      margin-bottom: 15px;
+      border: 1.5px solid #6f4e37;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+   <h1 style="text-align: center;">
+  <nav>
+    <a href="index.html">DASH BOARD</a>
+    <a href="add-product.html">ADD PRODUCT</a>
+    <a href="report.html">REPORT</a>
+  </nav>
+</h1>
+</header>
+
+<main>
+  <h1>เพิ่ม / แก้ไขสินค้า</h1>
+
+  <form id="product-form" enctype="multipart/form-data">
+    <input type="hidden" id="product-id" />
+    <label for="product-name">ชื่อสินค้า</label>
+    <input type="text" id="product-name" required placeholder="ชื่อสินค้า" />
+
+    <label for="product-category">หมวดหมู่</label>
+    <select id="product-category" required>
+      <option value="">-- เลือกหมวดหมู่ --</option>
+      <option value="วัตถุดิบ">วัตถุดิบ</option>
+      <option value="อุปกรณ์">อุปกรณ์</option>
+    </select>
+
+    <label for="product-expiry">วันที่หมดอายุ (ถ้ามี)</label>
+    <input type="text" id="product-expiry" />
+
+    <label for="product-stock">จำนวนคงเหลือ</label>
+    <input type="text" id="product-stock" min="0" required />
+
+    <label for="product-image">รูปสินค้า (ถ้ามี)</label>
+    <input type="file" id="product-image" accept="image/*" />
+    <img id="img-preview" class="img-preview" src="" alt="" style="display:none;" />
+
+    <button type="submit" id="btn-save">เพิ่มสินค้า</button>
+    <button type="button" id="btn-cancel" class="btn-cancel" style="display:none;">ยกเลิก</button>
+  </form>
+
+  <hr style="margin: 30px 0; border-color: #d2996e;" />
+
+  <h1>เติม / ตัดสต็อกสินค้า</h1>
+
+  <form id="stock-form" enctype="multipart/form-data">
+    <label for="stock-product">เลือกสินค้า</label>
+    <select id="stock-product" required>
+      <option value="">-- เลือกสินค้า --</option>
+    </select>
+
+    <label for="stock-type">ประเภท</label>
+    <select id="stock-type" required>
+      <option value="">-- เลือกประเภท --</option>
+      <option value="เติม">เติม</option>
+      <option value="ตัด">ตัด</option>
+    </select>
+
+    <label for="stock-quantity">จำนวน</label>
+    <input type="text" id="stock-quantity" min="1" required />
+
+    <label for="stock-date">วันที่</label>
+    <input type="text" id="stock-date" required />
+
+    <label for="stock-receipt">อัปโหลดใบเสร็จ (ถ้ามี)</label>
+    <input type="file" id="stock-receipt" accept="image/*,application/pdf" />
+
+    <button type="submit">บันทึก</button>
+  </form>
+</main>
+
+<script>
+  let products = JSON.parse(localStorage.getItem('products')) || [];
+  let stockLogs = JSON.parse(localStorage.getItem('stockLogs')) || [];
+
+  function saveData() {
+    localStorage.setItem('products', JSON.stringify(products));
+    localStorage.setItem('stockLogs', JSON.stringify(stockLogs));
+  }
+
+  function generateId() {
+    return '_' + Math.random().toString(36).substr(2, 9);
+  }
+
+  function readImageFile(input, callback) {
+    if(input.files && input.files[0]){
+      const reader = new FileReader();
+      reader.onload = e => callback(e.target.result);
+      reader.readAsDataURL(input.files[0]);
+    } else {
+      callback(null);
+    }
+  }
+
+  function resetForm() {
+    document.getElementById('product-form').reset();
+    document.getElementById('product-id').value = '';
+    document.getElementById('img-preview').style.display = 'none';
+    document.getElementById('btn-save').textContent = 'เพิ่มสินค้า';
+    document.getElementById('btn-cancel').style.display = 'none';
+  }
+
+  function fillProductSelect() {
+    const select = document.getElementById('stock-product');
+    select.innerHTML = '<option value="">-- เลือกสินค้า --</option>';
+    products.forEach(p => {
+      select.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+    });
+  }
+
+  document.getElementById('product-image').addEventListener('change', e => {
+    readImageFile(e.target, (data) => {
+      const imgPreview = document.getElementById('img-preview');
+      if(data){
+        imgPreview.src = data;
+        imgPreview.style.display = 'block';
+      } else {
+        imgPreview.src = '';
+        imgPreview.style.display = 'none';
+      }
+    });
+  });
+
+  document.getElementById('product-form').addEventListener('submit', e => {
+    e.preventDefault();
+
+    const id = document.getElementById('product-id').value;
+    const name = document.getElementById('product-name').value.trim();
+    const category = document.getElementById('product-category').value;
+    const expiryDate = document.getElementById('product-expiry').value || null;
+    const stock = parseInt(document.getElementById('product-stock').value);
+    const imageInput = document.getElementById('product-image');
+
+    if(!name || !category || isNaN(stock) || stock < 0){
+      Swal.fire('ผิดพลาด', 'กรุณากรอกข้อมูลให้ครบถ้วนและถูกต้อง', 'error');
+      return;
+    }
+
+    function saveProduct(imageData){
+      if(id){
+        const idx = products.findIndex(p => p.id === id);
+        if(idx !== -1){
+          products[idx] = { ...products[idx], name, category, expiryDate, stock };
+          if(imageData !== null) products[idx].image = imageData;
+        }
+      } else {
+        products.push({
+          id: generateId(),
+          name,
+          category,
+          expiryDate,
+          stock,
+          image: imageData
+        });
+      }
+      saveData();
+      Swal.fire('สำเร็จ!', 'บันทึกข้อมูลเรียบร้อยแล้ว', 'success');
+      resetForm();
+      fillProductSelect();
+    }
+
+    if(imageInput.files.length > 0){
+      readImageFile(imageInput, saveProduct);
+    } else {
+      saveProduct(null);
+    }
+  });
+
+  document.getElementById('btn-cancel').addEventListener('click', resetForm);
+
+  document.getElementById('stock-form').addEventListener('submit', e => {
+    e.preventDefault();
+
+    const productId = document.getElementById('stock-product').value;
+    const type = document.getElementById('stock-type').value;
+    const quantity = parseInt(document.getElementById('stock-quantity').value);
+    const date = document.getElementById('stock-date').value;
+    const receiptInput = document.getElementById('stock-receipt');
+
+    if(!productId || !type || isNaN(quantity) || quantity <= 0 || !date){
+      Swal.fire('ผิดพลาด', 'กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
+      return;
+    }
+
+    const product = products.find(p => p.id === productId);
+    if(!product){
+      Swal.fire('ผิดพลาด', 'ไม่พบสินค้าที่เลือก', 'error');
+      return;
+    }
+
+    function saveStockLog(receiptData){
+      if(type === 'เติม'){
+        product.stock += quantity;
+      } else if(type === 'ตัด'){
+        if(product.stock < quantity){
+          Swal.fire('ผิดพลาด', 'จำนวนสต็อกไม่เพียงพอสำหรับการตัด', 'warning');
+          return;
+        }
+        product.stock -= quantity;
+      }
+
+      stockLogs.push({
+        id: generateId(),
+        productId,
+        productName: product.name,
+        type,
+        quantity,
+        date,
+        receipt: receiptData
+      });
+
+      saveData();
+      Swal.fire('สำเร็จ!', 'บันทึกข้อมูลเรียบร้อยแล้ว', 'success');
+      document.getElementById('stock-form').reset();
+    }
+
+    if(receiptInput.files.length > 0){
+      const reader = new FileReader();
+      reader.onload = e => saveStockLog(e.target.result);
+      reader.readAsDataURL(receiptInput.files[0]);
+    } else {
+      saveStockLog(null);
+    }
+  });
+
+  fillProductSelect();
+</script>
+
+</body>
+</html>

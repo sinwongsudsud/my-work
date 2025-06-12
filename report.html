@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="https://fonts.googleapis.com/css2?family=Mali&display=swap" rel="stylesheet" />
+<title>รายงานสต็อกสินค้า</title>
+<style>
+  body {
+    font-family: 'mali';
+    background: #fff8f0;
+    color: #4b2e05;
+    margin: 0; padding: 0;
+  }
+  header {
+    background: #6f4e37;
+    color: white;
+    padding: 15px 20px;
+    font-size: 1.4rem;
+  }
+  nav a {
+    color: #d9cbb6;
+    margin-right: 20px;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  nav a:hover {
+    text-decoration: underline;
+  }
+  main {
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 0 15px;
+  }
+  h1 {
+    margin-bottom: 15px;
+    font-weight: 700;
+  }
+  label {
+    font-weight: 600;
+  }
+  select, input[type="date"] {
+    padding: 6px 10px;
+    font-size: 1rem;
+    border: 1.5px solid #6f4e37;
+    border-radius: 6px;
+    margin: 0 15px 15px 5px;
+  }
+  button {
+    background: #6f4e37;
+    color: white;
+    font-weight: 700;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-left: 10px;
+    transition: background 0.3s ease;
+  }
+  button:hover {
+    background: #8c6a4a;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    box-shadow: 0 2px 8px rgb(111 78 55 / 0.3);
+  }
+  th, td {
+    border: 1px solid #6f4e37;
+    padding: 10px;
+    text-align: center;
+  }
+  th {
+    background-color: #6f4e37;
+    color: white;
+  }
+  footer {
+    text-align: center;
+    color: #6f4e37;
+    margin: 30px 0 15px 0;
+    font-size: 0.9rem;
+  }
+</style>
+</head>
+<body>
+
+<header>
+   <h1 style="text-align: center;">
+  <nav>
+    <a href="index.html">DASH BOARD</a>
+    <a href="add-product.html">ADD PRODUCT</a>
+    <a href="report.html">REPORT</a>
+  </nav>
+</h1>
+</header>
+
+<main>
+  <h1>รายงานยอดเข้า-ออกสต็อกสินค้า</h1>
+
+  <section id="filter-section">
+    <label for="filter-product">สินค้า:</label>
+    <select id="filter-product">
+      <option value="">-- เลือกสินค้า --</option>
+    </select>
+
+    <label for="filter-type">ประเภท:</label>
+    <select id="filter-type">
+      <option value="">ทุกประเภท</option>
+      <option value="เติม">เติม</option>
+      <option value="ตัด">ตัด</option>
+    </select>
+
+    <label for="filter-date-start">ตั้งแต่วันที่:</label>
+    <input type="text" id="filter-date-start" />
+
+    <label for="filter-date-end">ถึงวันที่:</label>
+    <input type="text" id="filter-date-end" />
+
+    <button id="btn-filter">กรอง</button>
+  </section>
+
+  <section style="margin-top: 20px;">
+    <table id="report-table">
+      <thead>
+        <tr>
+          <th>วันที่</th>
+          <th>สินค้า</th>
+          <th>ประเภท</th>
+          <th>จำนวน</th>
+          <th>ใบเสร็จ</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- รายการ -->
+      </tbody>
+    </table>
+  </section>
+
+</main>
+
+<footer>
+  &copy; HOP STOCK EIEI
+</footer>
+
+<script>
+  let products = JSON.parse(localStorage.getItem('products')) || [];
+  let stockLogs = JSON.parse(localStorage.getItem('stockLogs')) || [];
+
+  function fillProductSelect() {
+    const select = document.getElementById('filter-product');
+    select.innerHTML = '<option value="">-- เลือกสินค้า --</option>';
+    products.forEach(p => {
+      select.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+    });
+  }
+
+  function renderReportTable() {
+    const tbody = document.querySelector('#report-table tbody');
+    tbody.innerHTML = '';
+
+    const filterProduct = document.getElementById('filter-product').value;
+    const filterType = document.getElementById('filter-type').value;
+    const filterDateStart = document.getElementById('filter-date-start').value;
+    const filterDateEnd = document.getElementById('filter-date-end').value;
+
+    let filteredLogs = stockLogs;
+
+    if(filterProduct){
+      filteredLogs = filteredLogs.filter(log => log.productId === filterProduct);
+    }
+    if(filterType){
+      filteredLogs = filteredLogs.filter(log => log.type === filterType);
+    }
+    if(filterDateStart){
+      filteredLogs = filteredLogs.filter(log => log.date >= filterDateStart);
+    }
+    if(filterDateEnd){
+      filteredLogs = filteredLogs.filter(log => log.date <= filterDateEnd);
+    }
+
+    if(filteredLogs.length === 0){
+      tbody.innerHTML = `<tr><td colspan="5" style="color:#a9746e;">ไม่มีข้อมูลตามเงื่อนไข</td></tr>`;
+      return;
+    }
+
+    filteredLogs.forEach(log => {
+      let receiptLink = '-';
+      if(log.receipt){
+        receiptLink = `<a href="${log.receipt}" target="_blank" style="color:#6f4e37; font-weight:600;">ดูใบเสร็จ</a>`;
+      }
+      tbody.innerHTML += `
+        <tr>
+          <td>${log.date}</td>
+          <td>${log.productName}</td>
+          <td>${log.type}</td>
+          <td>${log.quantity}</td>
+          <td>${receiptLink}</td>
+        </tr>
+      `;
+    });
+  }
+
+  document.getElementById('btn-filter').addEventListener('click', e => {
+    e.preventDefault();
+    renderReportTable();
+  });
+
+  fillProductSelect();
+  renderReportTable();
+</script>
+
+</body>
+</html>

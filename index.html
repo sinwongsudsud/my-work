@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>HOP DASHBOARD</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Mali&display=swap');
+  body {
+    font-family: 'Mali', cursive, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #fff8f0;
+    color: #4b2e05;
+    margin: 0; padding: 0;
+  }
+  header {
+    background: #6f4e37;
+    color: white;
+    padding: 15px 20px;
+    font-size: 1.4rem;
+  }
+  nav a {
+    color: #d9cbb6;
+    margin-right: 20px;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  nav a:hover {
+    text-decoration: underline;
+  }
+  main {
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 0 15px;
+  }
+  h1 {
+    margin-bottom: 10px;
+    font-weight: 700;
+  }
+  #alerts-container {
+    margin-bottom: 20px;
+  }
+  .alert {
+    background: #d2996e;
+    color: #3e1f00;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    font-weight: 600;
+  }
+  .search-filter {
+    margin-bottom: 15px;
+  }
+  input[type="text"], select {
+    padding: 6px 10px;
+    font-size: 1rem;
+    border: 1.5px solid #6f4e37;
+    border-radius: 4px;
+    width: 200px;
+    margin-right: 10px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    box-shadow: 0 2px 8px rgb(111 78 55 / 0.3);
+  }
+  th, td {
+    border: 1px solid #6f4e37;
+    padding: 10px;
+    text-align: center;
+  }
+  th {
+    background-color: #6f4e37;
+    color: white;
+  }
+  td img.img-thumb {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+  td span.status-normal {
+    color: #4caf50;
+    font-weight: 700;
+  }
+  td span.status-low {
+    color: #f0a500;
+    font-weight: 700;
+  }
+  td span.status-out {
+    color: #d63447;
+    font-weight: 700;
+  }
+  button.delete-btn {
+    background: #d63447;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+  }
+  button.delete-btn:hover {
+    background: #a82a36;
+  }
+  footer {
+    text-align: center;
+    color: #6f4e37;
+    margin: 30px 0 15px 0;
+    font-size: 0.9rem;
+  }
+
+  /* Popup confirm modal */
+  #confirm-modal {
+    display: none;
+    position: fixed;
+    top:0; left:0; right:0; bottom:0;
+    background: rgba(0,0,0,0.4);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  #confirm-modal .modal-content {
+    background: #fff8f0;
+    padding: 25px 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgb(111 78 55 / 0.4);
+    max-width: 320px;
+    text-align: center;
+    font-family: 'Mali', cursive;
+    color: #6f4e37;
+  }
+  #confirm-modal .modal-content p {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+  }
+  #confirm-modal button {
+    font-family: 'Mali', cursive;
+    padding: 8px 16px;
+    margin: 0 10px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgb(111 78 55 / 0.3);
+    transition: background-color 0.3s ease;
+  }
+  #confirm-modal button#confirm-btn {
+    background-color: #d63447;
+    color: white;
+  }
+  #confirm-modal button#confirm-btn:hover {
+    background-color: #a82a36;
+  }
+  #confirm-modal button#cancel-btn {
+    background-color: #c1a37a;
+    color: white;
+  }
+  #confirm-modal button#cancel-btn:hover {
+    background-color: #a07e55;
+  }
+</style>
+</head>
+<body>
+
+<header>
+   <h1 style="text-align: center;">
+  <nav>
+    <a href="index.html">DASH BOARD</a>
+    <a href="add-product.html">ADD PRODUCT</a>
+    <a href="report.html">REPORT</a>
+  </nav>
+</h1>
+</header>
+
+<main>
+  <h1>HOP STOCK</h1>
+
+  <section id="alerts-container">
+    <!-- แจ้งเตือนสินค้า -->
+  </section>
+
+  <section class="search-filter">
+    <input type="text" id="search-name" placeholder="ค้นหาชื่อสินค้า..." />
+    <select id="filter-category">
+      <option value="">ทุกหมวดหมู่</option>
+      <option value="วัตถุดิบ">วัตถุดิบ</option>
+      <option value="อุปกรณ์">อุปกรณ์</option>
+    </select>
+  </section>
+
+  <section>
+    <table id="product-table">
+      <thead>
+        <tr>
+          <th>รูป</th>
+          <th>ชื่อสินค้า</th>
+          <th>หมวดหมู่</th>
+          <th>จำนวนคงเหลือ</th>
+          <th>วันที่หมดอายุ</th>
+          <th>สถานะสต็อก</th>
+          <th>จัดการ</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- รายการสินค้า -->
+      </tbody>
+    </table>
+  </section>
+
+</main>
+
+<footer>
+  &copy; HOP STOCK EIEI
+</footer>
+
+<!-- Confirm Delete Modal -->
+<div id="confirm-modal">
+  <div class="modal-content">
+    <p>❓ คุณแน่ใจจะลบสินค้านี้ไหมคะ?</p>
+    <button id="confirm-btn">ใช่ ลบเลย!</button>
+    <button id="cancel-btn">ไม่ลบค่ะ</button>
+  </div>
+</div>
+
+<script>
+  let products = JSON.parse(localStorage.getItem('products')) || [];
+
+  const lowStockThreshold = 5;
+  const expiryAlertDays = 7;
+  let productIndexToDelete = null;
+
+  function renderAlerts() {
+    const container = document.getElementById('alerts-container');
+    container.innerHTML = '';
+    const today = new Date();
+
+    const lowStockProducts = products.filter(p => p.stock > 0 && p.stock <= lowStockThreshold);
+    lowStockProducts.forEach(p => {
+      const div = document.createElement('div');
+      div.className = 'alert';
+      div.textContent = `⚠️ สินค้า "${p.name}" คงเหลือต่ำ (${p.stock} ชิ้น) กรุณาสั่งซื้อเพิ่ม`;
+      container.appendChild(div);
+    });
+
+    products.forEach(p => {
+      if (!p.expiryDate) return;
+      const expiry = new Date(p.expiryDate);
+      const diffDays = Math.floor((expiry - today) / (1000*60*60*24));
+      if(diffDays >=0 && diffDays <= expiryAlertDays){
+        const div = document.createElement('div');
+        div.className = 'alert';
+        div.textContent = `⚠️ สินค้า "${p.name}" กำลังจะหมดอายุใน ${diffDays} วัน (วันที่ ${p.expiryDate})`;
+        container.appendChild(div);
+      }
+    });
+
+    if(container.innerHTML === ''){
+      container.innerHTML = '<p style="color:#a9746e; font-style: italic;">ไม่มีแจ้งเตือนสินค้าคงเหลือต่ำ หรือสินค้าหมดอายุ</p>';
+    }
+  }
+
+  function renderProductsTable() {
+    const tbody = document.querySelector('#product-table tbody');
+    const filterName = document.getElementById('search-name').value.trim().toLowerCase();
+    const filterCategory = document.getElementById('filter-category').value;
+
+    tbody.innerHTML = '';
+
+    let filteredProducts = products.filter(p => {
+      const matchName = p.name.toLowerCase().includes(filterName);
+      const matchCategory = filterCategory === '' || p.category === filterCategory;
+      return matchName && matchCategory;
+    });
+
+    if(filteredProducts.length === 0){
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#a9746e;">ไม่มีสินค้าตามเงื่อนไข</td></tr>`;
+      return;
+    }
+
+    filteredProducts.forEach((p, index) => {
+      let status = '';
+      if(p.stock <= 0) status = `<span class="status-out">หมด</span>`;
+      else if(p.stock <= lowStockThreshold) status = `<span class="status-low">ต่ำ</span>`;
+      else status = `<span class="status-normal">ปกติ</span>`;
+
+      tbody.innerHTML += `
+        <tr>
+          <td>${p.image ? `<img src="${p.image}" alt="รูปสินค้า" class="img-thumb" />` : '-'}</td>
+          <td>${p.name}</td>
+          <td>${p.category}</td>
+          <td>${p.stock}</td>
+          <td>${p.expiryDate || '-'}</td>
+          <td>${status}</td>
+          <td><button class="delete-btn" onclick="openConfirmModal(${index})">ลบ</button></td>
+        </tr>
+      `;
+    });
+  }
+
+  document.getElementById('search-name').addEventListener('input', renderProductsTable);
+  document.getElementById('filter-category').addEventListener('change', renderProductsTable);
+
+  // Modal functions
+  function openConfirmModal(index) {
+    productIndexToDelete = index;
+    document.getElementById('confirm-modal').style.display = 'flex';
+  }
+
+  function closeConfirmModal() {
+    document.getElementById('confirm-modal').style.display = 'none';
+    productIndexToDelete = null;
+  }
+
+  document.getElementById('confirm-btn').addEventListener('click', () => {
+    if(productIndexToDelete !== null) {
+      products.splice(productIndexToDelete, 1);
+      localStorage.setItem('products', JSON.stringify(products));
+      renderAlerts();
+      renderProductsTable();
+      closeConfirmModal();
+      alert('ลบสินค้าสำเร็จค่ะ 😊');
+    }
+  });
+
+  document.getElementById('cancel-btn').addEventListener('click', () => {
+    closeConfirmModal();
+  });
+
+  function init() {
+    renderAlerts();
+    renderProductsTable();
+  }
+  init();
+</script>
+
+</body>
+</html>
